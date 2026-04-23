@@ -45,7 +45,7 @@
 /**
  * Shared data populated by ADC reads in TIMG2 ISR each tick
  */
-extern volatile uint16_t joystick_raw[ADC_NUM_CHANNELS]
+extern volatile uint16_t joystick_raw[ADC_NUM_CHANNELS];
 
 
 /**
@@ -64,7 +64,7 @@ void buzzer_off(void); // silence buzzer, return pin to GPIO low
 int16_t joystick_x(void); // returns -128 to 127, centered at 0
 int16_t joystick_y(void); // return -128 to 127, centered at 0
 
-uint18_t joystick_getHorizontal(void); // returns 0-255
-uint18_t joystick_getVertical(void); // returns 0-255
+uint8_t joystick_getHorizontal(void); // returns 0-255
+uint8_t joystick_getVertical(void); // returns 0-255
 
 #endif

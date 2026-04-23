@@ -80,7 +80,7 @@ void init_TIMA(void) {
     DL_TimerA_ClockConfig timaClk = {.clockSel = DL_TIMER_CLOCK_BUSCLK,.divideRatio = DL_TIMER_CLOCK_DIVIDE_1, .prescale = 0};
     DL_TimerA_setClockConfig(TIMA0, (DL_TimerA_ClockConfig *)&timaClk);
 
-    DL_TimerA_initPWMMode(TIMA0, &(DL_TimerA_PWMConfig){.pwmMode = DL_TIMER_PWM_ODE_EDGE_ALIGN,.period = TIMA_LOAD_VAL, .isTimerWithFourCC = false});
+    DL_TimerA_initPWMMode(TIMA0, &(DL_TimerA_PWMConfig){.pwmMode = DL_TIMER_PWM_MODE_EDGE_ALIGN,.period = TIMA_LOAD_VAL, .isTimerWithFourCC = false});
 
     DL_TimerA_setCaptureCompareValue(TIMA0, TIMA_DUTY_50PCT, DL_TIMER_CC_0_INDEX);
 
@@ -95,7 +95,7 @@ void buzzer_on(void) {
 }
 
 void buzzer_off(void) {
-    DL_GPIO_clearPins(BUZZER_PORT,BUZZER_PIN)
+    DL_GPIO_clearPins(BUZZER_PORT,BUZZER_PIN);
     /** need to decide on IOMUX to return buzzer pin output to GPIO low */
 }
 
