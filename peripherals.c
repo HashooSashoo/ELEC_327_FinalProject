@@ -109,3 +109,19 @@ int16_t joystick_x(void) {
 int16_t joystick_y(void) {
     return (int16_t)joystick_raw[JOYSTICK_Y] - 128;
 }
+
+/**
+ * Returns raw ADC value for horizontal axis (0-255)
+ * Calls after ADC conversion completed
+ */
+uint8_t joystick_getHorizontal(void) {
+    return (uint8_t)joystick_raw[JOYSTICK_X];
+}
+
+/**
+ * Returns raw ADC value for vertical axis (0-255)
+ * Calls after ADC conversion completed
+ */
+uint8_t joystick_getVertical(void) {
+    return (uint8_t)joystick_raw[JOYSTICK_Y];
+}
