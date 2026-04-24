@@ -9,7 +9,7 @@
 
 /** Need to confirm these pins to be in PCB design */
 #define BTN_PORT GPIOA
-#define BTN_PIN DL_GPIO_PIN_18
+#define BTN_PIN DL_GPIO_PIN_21
 
 #define BUZZER_PORT GPIOA
 #define BUZZER_PIN DL_GPIO_PIN_17

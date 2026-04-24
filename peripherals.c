@@ -82,21 +82,23 @@ void init_TIMA(void) {
 
     DL_TimerA_initPWMMode(TIMA0, &(DL_TimerA_PWMConfig){.pwmMode = DL_TIMER_PWM_MODE_EDGE_ALIGN,.period = TIMA_LOAD_VAL, .isTimerWithFourCC = false});
 
-    DL_TimerA_setCaptureCompareValue(TIMA0, TIMA_DUTY_50PCT, DL_TIMER_CC_0_INDEX);
+    DL_TimerA_setCaptureCompareValue(TIMA0, TIMA_DUTY_50PCT, DL_TIMER_CC_3_INDEX);
 
     /* Pin output start LOW, so silent until buzzer_on() */
-    DL_TimerA_setCaptureCompareOutCtl(TIMA0, DL_TIMER_CC_OCTL_INIT_VAL_LOW, DL_TIMER_CC_OCTL_INV_OUT_DISABLED, DL_TIMER_CC_OCTL_SRC_FUNCVAL, DL_TIMER_CC_0_INDEX);
+    DL_TimerA_setCaptureCompareOutCtl(TIMA0, DL_TIMER_CC_OCTL_INIT_VAL_LOW, DL_TIMER_CC_OCTL_INV_OUT_DISABLED, DL_TIMER_CC_OCTL_SRC_FUNCVAL, DL_TIMER_CC_3_INDEX);
 
     DL_TimerA_startCounter(TIMA0);
 }
 
 void buzzer_on(void) {
-    /** need to decide on IOMUX to route TIMA0 CC0 output to buzzer pin */
+    /** routing TIMA0 CC0 output to buzzer pin */
+    IOMUX->SECCFG.PINCM[IOMUX_PINCM39] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM39_PF_TIMA0_CCP3;
 }
 
 void buzzer_off(void) {
+    /** returning buzzer pin output to GPIO low */
+    IOMUX->SECCFG.PINCM[IOMUX_PINCM39] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM39_PF_GPIOA_DIO17;
     DL_GPIO_clearPins(BUZZER_PORT,BUZZER_PIN);
-    /** need to decide on IOMUX to return buzzer pin output to GPIO low */
 }
 
 /**
