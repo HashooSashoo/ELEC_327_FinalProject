@@ -1,5 +1,8 @@
+// commands.h
 #ifndef commands_include
 #define commands_include
+
+#include <stdint.h>
 
 #define NOP            (0x00) // no operation, do nothing
 #define SWRESET        (0x01) // software reset, wait 5ms before next command (120ms after commanding to sleep)
@@ -56,32 +59,33 @@
 #define IFCTR          (0xF6) // interface control, sets up how the driver communicates with the MCU
 #define PRCTR          (0xF7) // pump ratio control, sets the internal charge pump voltage levels
 
-#include <stdint.h>
-#include <stdbool.h>
-
-// ---- Pin Configuration (fill in your actual pins) ----
-// Which GPIO port (GPIOA or GPIOB)
+// pin configuration
+// basically because we are going to change these when we put then in the PCB, 
+// which GPIO port (GPIOA or GPIOB)
 #define LCD_CS_PORT     GPIOA
 #define LCD_DC_PORT     GPIOA
 #define LCD_RST_PORT    GPIOA
 
-// Pin indices within that port
+// pin indices within that port
 #define LCD_CS_PIN      (1 << 27)   // example: PA27
 #define LCD_DC_PIN      (1 << 12)   // example: PA12
 #define LCD_RST_PIN     (1 << 13)   // example: PA13
 
 // IOMUX PINCM indices for those pins (for configuring as GPIO output)
-#define LCD_CS_PINCM    IOMUX_PINCM60   // example: matches PA12
+#define LCD_CS_PINCM    IOMUX_PINCM60   // example: matches PA27
 #define LCD_DC_PINCM    IOMUX_PINCM34   // example: matches PA13
 #define LCD_RST_PINCM   IOMUX_PINCM35   // example: matches PA14
 
+// IOMUX GPIO constant (always 0x01)
+#define GPIO_CONFIG     (0x01)
 
-void LCD_DC_Command(void);
-void LCD_DC_Data(void);
-void LCD_CS_Low(void);
-void LCD_CS_High(void);
-void LCD_RST_Low(void);
-void LCD_RST_High(void);
+
+void SetDC_Command(void);
+void SetDC_Data(void);
+void SetCS_Low(void);
+void SetCS_High(void);
+void SetRST_Low(void);
+void SetRST_High(void);
 
 void SPI_SendByte(uint8_t byte);
 
@@ -90,4 +94,4 @@ void LCD_SendCommand(uint8_t cmd, const uint8_t *data, uint16_t data_len);
 void LCD_SendData(const uint8_t *data, uint16_t len);
 void LCD_HardReset(void);
 
-#endif // COMMAND_H
+#endif

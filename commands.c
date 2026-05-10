@@ -1,140 +1,151 @@
-// command.c
+// commands.c
 #include "commands.h"
 #include "delay.h"
+#include <stdint.h>
 #include <ti/devices/msp/msp.h>
 
-// PUBLIC
-// Flags for interface to main code
-bool spi_wakeup;
+// --------------------------------
+// LOW LEVEL PIN HELPERS
+// --------------------------------
 
-// PRIVATE
-// Data buffer and length for SPI TX - we'll load this with a function
-uint16_t *spi_message;
-int      spi_message_len;
-int      spi_message_idx;
-bool     spi_transmission_in_progress;
-
-// ----- Low-level pin helpers -----
-
-void LCD_DC_Command(void) {
-    LCD_DC_PORT->DOUTCLR31_0 = LCD_DC_PIN;
+void SetDC_Command(void) { // Sets DC to 0 to have screen take in commands
+    GPIOA->DOUTCLR31_0 = LCD_DC_PIN;
+}
+void SetDC_Data(void) { // Sets DC to 1 to have screen take in data
+    GPIOA->DOUTSET31_0 = LCD_DC_PIN;
 }
 
-void LCD_DC_Data(void) {
-    LCD_DC_PORT->DOUTSET31_0 = LCD_DC_PIN;
+void SetCS_Low(void) { // Sets CS to low to start communication
+    GPIOA->DOUTCLR31_0 = LCD_CS_PIN;
+}
+void SetCS_High(void) { // Sets CS high to end communication
+    GPIOA->DOUTSET31_0 = LCD_CS_PIN;
 }
 
-void LCD_CS_Low(void) {
-    LCD_CS_PORT->DOUTCLR31_0 = LCD_CS_PIN;
+void SetRST_Low(void) { // ACTIVE LOW, set low to actually reset
+    GPIOA->DOUTCLR31_0 = LCD_RST_PIN;
+}
+void SetRST_High(void) { // stays high by default
+    GPIOA->DOUTSET31_0 = LCD_RST_PIN;
 }
 
-void LCD_CS_High(void) {
-    LCD_CS_PORT->DOUTSET31_0 = LCD_CS_PIN;
-}
-
-void LCD_RST_Low(void) {
-    LCD_RST_PORT->DOUTCLR31_0 = LCD_RST_PIN;
-}
-
-void LCD_RST_High(void) {
-    LCD_RST_PORT->DOUTSET31_0 = LCD_RST_PIN;
-}
-
-// ----- Blocking SPI byte send -----
-
+// THE MAIN BYTE SENDER!!! will use a lot
 void SPI_SendByte(uint8_t byte) {
     SPI1->TXDATA = byte;
-    while (SPI1->STAT & SPI_STAT_BUSY_MASK);
+    while (SPI1->STAT & SPI_STAT_BUSY_MASK);    // wait for byte to be done transmitting
 }
 
-// ----- Public: SPI + GPIO setup -----
+// --------------------------------
+// SPI + GPIO SETUP FOR SPI
+// --------------------------------
 
-void LCD_InitSPI(void) {
-    // GPIO power-on
-    if (LCD_DC_PORT->GPRCM.STAT & GPIO_STAT_RESETSTKY_MASK) {
-        LCD_DC_PORT->GPRCM.RSTCTL = (GPIO_RSTCTL_KEY_UNLOCK_W |
-                                      GPIO_RSTCTL_RESETSTKYCLR_CLR |
-                                      GPIO_RSTCTL_RESETASSERT_ASSERT);
-        LCD_DC_PORT->GPRCM.PWREN  = (GPIO_PWREN_KEY_UNLOCK_W |
-                                      GPIO_PWREN_ENABLE_ENABLE);
-        delay_cycles(POWER_STARTUP_DELAY);
-    }
+void InitSPIModule(void) {
+        // SPI peripheral reset and power
+    SPI1->GPRCM.RSTCTL = (SPI_RSTCTL_KEY_UNLOCK_W |          // key unlock
+                          SPI_RSTCTL_RESETSTKYCLR_CLR |     // reset past clear status holder
+                          SPI_RSTCTL_RESETASSERT_ASSERT);   // assert reset
+    SPI1->GPRCM.PWREN =  (SPI_PWREN_KEY_UNLOCK_W |            // power enable key unlock
+                          SPI_PWREN_ENABLE_ENABLE);          // power enable
 
-    // DC, CS, RST as GPIO outputs
-    IOMUX->SECCFG.PINCM[LCD_CS_PINCM]  = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM60_PF_GPIOA_DIO27;
-    IOMUX->SECCFG.PINCM[LCD_DC_PINCM]  = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM34_PF_GPIOA_DIO12;
-    IOMUX->SECCFG.PINCM[LCD_RST_PINCM] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM35_PF_GPIOA_DIO13;
-
-    LCD_DC_PORT->DOE31_0  |= LCD_DC_PIN;
-    LCD_CS_PORT->DOE31_0  |= LCD_CS_PIN;
-    LCD_RST_PORT->DOE31_0 |= LCD_RST_PIN;
-
-    LCD_CS_High();
-    LCD_DC_Data();
-    LCD_RST_High();
-
-    // SPI pin muxing
-    IOMUX->SECCFG.PINCM[IOMUX_PINCM26] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM26_PF_SPI1_SCLK; // SPI Clock
-    IOMUX->SECCFG.PINCM[IOMUX_PINCM24] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM24_PF_SPI1_POCI; // SPI MISO
-    IOMUX->SECCFG.PINCM[IOMUX_PINCM25] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM25_PF_SPI1_PICO; // SPI MOSI
-
-    // SPI peripheral reset and power
-    SPI1->GPRCM.RSTCTL = (SPI_RSTCTL_KEY_UNLOCK_W |
-                           SPI_RSTCTL_RESETSTKYCLR_CLR |
-                           SPI_RSTCTL_RESETASSERT_ASSERT);
-    SPI1->GPRCM.PWREN = (SPI_PWREN_KEY_UNLOCK_W |
-                          SPI_PWREN_ENABLE_ENABLE);
     delay_cycles(POWER_STARTUP_DELAY);
 
-    SPI1->CLKSEL = SPI_CLKSEL_SYSCLK_SEL_ENABLE;
-    SPI1->CLKDIV = SPI_CLKDIV_RATIO_DIV_BY_1;
+    SPI1->CLKSEL = SPI_CLKSEL_SYSCLK_SEL_ENABLE; // use system clock (32 MHz) as reference clock (need this for speed)
+    SPI1->CLKDIV = SPI_CLKDIV_RATIO_DIV_BY_1;    // basically don't divide the clock source, we need all the speed we can get!
+    SPI1->CTL0 = SPI_CTL0_SPO_LOW | SPI_CTL0_SPH_FIRST |  // SPI mode 0
+                 SPI_CTL0_FRF_MOTOROLA_3WIRE |            // no hardware CS
+                 SPI_CTL0_DSS_DSS_8;                      // 8-bit frames
+    SPI1->CTL1 = SPI_CTL1_CP_ENABLE |      // microcontroller is the controller
+                 SPI_CTL1_PREN_DISABLE |   // no parity bit
+                 SPI_CTL1_PTEN_DISABLE |   // no parity transmission
+                 SPI_CTL1_MSB_ENABLE;      // transmit most significant bit first
 
-    SPI1->CTL0 = SPI_CTL0_SPO_LOW | SPI_CTL0_SPH_FIRST |  // SPI Mode 0
-                 SPI_CTL0_FRF_MOTOROLA_3WIRE |              // No hardware CS
-                 SPI_CTL0_DSS_DSS_8;                        // 8-bit frames
-
-    SPI1->CTL1 = SPI_CTL1_CP_ENABLE |
-                 SPI_CTL1_PREN_DISABLE |
-                 SPI_CTL1_PTEN_DISABLE |
-                 SPI_CTL1_MSB_ENABLE;
-
-    // 2 MHz: 32MHz / ((1+7) * 2)
+    // 16 MHz: 32MHz / ((1+0) * 2)
     SPI1->CLKCTL = 0;
 
-    SPI1->CTL1 |= SPI_CTL1_ENABLE_ENABLE;
+    SPI1->CTL1 |= SPI_CTL1_ENABLE_ENABLE; // enable SPI
+
+    // SPI pin muxing
+    IOMUX->SECCFG.PINCM[IOMUX_PINCM26] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM26_PF_SPI1_SCLK; // SPI clock
+    IOMUX->SECCFG.PINCM[IOMUX_PINCM24] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM24_PF_SPI1_POCI; // SPI MISO
+    IOMUX->SECCFG.PINCM[IOMUX_PINCM25] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM25_PF_SPI1_PICO; // SPI MOSI
 }
 
-// ----- Public: transport layer -----
+void InitGPIOPins(void) {
+            // GPIO power-on
+    GPIOA->GPRCM.RSTCTL = (GPIO_RSTCTL_KEY_UNLOCK_W |                 // key unlock
+                                    GPIO_RSTCTL_RESETSTKYCLR_CLR |    // clear reset status bit
+                                    GPIO_RSTCTL_RESETASSERT_ASSERT);  // assert reset
+
+    GPIOA->GPRCM.PWREN  = (GPIO_PWREN_KEY_UNLOCK_W |                  // enable power key
+                                    GPIO_PWREN_ENABLE_ENABLE);        // enable power
+    delay_cycles(MS_TO_CYCLES(10));
+
+    // DC, CS, RST as GPIO outputs
+    IOMUX->SECCFG.PINCM[LCD_CS_PINCM]  = IOMUX_PINCM_PC_CONNECTED | GPIO_CONFIG;
+    IOMUX->SECCFG.PINCM[LCD_DC_PINCM]  = IOMUX_PINCM_PC_CONNECTED | GPIO_CONFIG;
+    IOMUX->SECCFG.PINCM[LCD_RST_PINCM] = IOMUX_PINCM_PC_CONNECTED | GPIO_CONFIG;
+
+    // output enable the GPIO pins
+    GPIOA->DOESET31_0 = LCD_DC_PIN;
+    GPIOA->DOESET31_0 = LCD_CS_PIN;
+    GPIOA->DOESET31_0 = LCD_RST_PIN;
+}
+
+void LCD_InitSPI(void) {
+
+    // initialize the SPI and GPIO modules
+    InitSPIModule();
+    InitGPIOPins();
+
+    // set initial values before screen configuration
+    SetCS_High();  // no transmission
+    SetDC_Data();  // data mode
+    SetRST_High(); // no reset
+
+}
+
+// ----------------------------------
+// FUNCTIONS TO SEND COMMANDS TO SCREEN
+// ----------------------------------
 
 void LCD_SendCommand(uint8_t cmd, const uint8_t* data, uint16_t data_len) {
-    LCD_CS_Low();
-    LCD_DC_Command();
+    // start command transmission with CS -> low, DC -> low
+    SetCS_Low();
+    SetDC_Command();
+
+    // send the command byte
     SPI_SendByte(cmd);
 
-    if (data != 0x00 && data_len > 0) {
-        LCD_DC_Data();
+    // send any data as bytes
+    if ((data != 0x00) && (data_len > 0)) { // this is a flag where if pointer is 0x00 or data_len <= 0, no data transmission happens 
+        SetDC_Data();
         for (uint16_t i = 0; i < data_len; i++) {
             SPI_SendByte(data[i]);
         }
     }
 
-    LCD_CS_High();
+    // end transmission
+    SetCS_High();
 }
 
+// this is just the above function but without sending the command (i dont think I even use this lol)
 void LCD_SendData(const uint8_t* data, uint16_t len) {
-    LCD_CS_Low();
-    LCD_DC_Data();
+    SetCS_Low();
+    SetDC_Data();
     for (uint16_t i = 0; i < len; i++) {
         SPI_SendByte(data[i]);
     }
-    LCD_CS_High();
+    SetCS_High();
 }
 
+// ---------------------------------------------
+// HARDWARE RESET: uses the reset pin to hardware reset the screen
+// ---------------------------------------------
 void LCD_HardReset(void) {
-    LCD_RST_High();
+    SetRST_High();
     delay_cycles(4000);
-    LCD_RST_Low();
-    delay_cycles(MS_TO_CYCLES(10));   // ~10ms low pulse
-    LCD_RST_High();
-    delay_cycles(MS_TO_CYCLES(120));  // ~120ms recovery
+    SetRST_Low();
+    delay_cycles(MS_TO_CYCLES(10));   // 10ms low pulse
+    SetRST_High();
+    delay_cycles(MS_TO_CYCLES(120));  // 120ms recovery
 }
