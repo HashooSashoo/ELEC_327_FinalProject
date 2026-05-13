@@ -116,7 +116,7 @@ void DrawBitmap(const uint8_t *bitmap) {
     // this means our bitmap we input is gonna be a total of 
     // pre-decoded colors for the current logical row: 120 entries, each {hi, lo} -> {white, black}.
     // hi = lo for both white (0xFF/0xFF) and black (0x00/0x00), so one byte is ok, but I put 2 to make looping easier
-    uint8_t row_colors[BITMAP_COLS][2];
+    uint8_t row_colors[BITMAP_COLS][2]; // stores a rows worth of colors
  
     for (uint16_t logical_row = 0; logical_row < BITMAP_ROWS; logical_row++) {
         // ---- Decode this logical row's 120 bits into row_colors ----

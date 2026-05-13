@@ -10,15 +10,34 @@
 #include "commands.h"
 #include "graphics3d.h"
 #include "gamestate.h"
+#include "joystick.h"
 
 static Object3D cube;
 static Object3D arrow;
 
 int main(void) {
+    joystick_init();
     LCD_InitSPI();
     InitScreen();
 
-    TitleScreen();
+    int counter = 0;
+
+    int state = TITLE;
+    int score = 0;
+
+    while (1) {
+        if (state == TITLE) {
+            state = TitleScreen();
+        }
+
+        else if (state == GAME) {
+            state = VideoGame();
+        }
+
+        else if (state == ENDSCREEN) {
+            state = FinalScreen();
+        }
+    }
     /*
     // Build the cube from the factory. cube_init() leaves the cube
     // centered at the origin (0, 0, 0); we translate it to z=4 so it

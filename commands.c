@@ -42,9 +42,9 @@ void SPI_SendByte(uint8_t byte) {
 void InitSPIModule(void) {
         // SPI peripheral reset and power
     SPI1->GPRCM.RSTCTL = (SPI_RSTCTL_KEY_UNLOCK_W |          // key unlock
-                          SPI_RSTCTL_RESETSTKYCLR_CLR |     // reset past clear status holder
-                          SPI_RSTCTL_RESETASSERT_ASSERT);   // assert reset
-    SPI1->GPRCM.PWREN =  (SPI_PWREN_KEY_UNLOCK_W |            // power enable key unlock
+                        SPI_RSTCTL_RESETSTKYCLR_CLR |     // reset past clear status holder
+                      SPI_RSTCTL_RESETASSERT_ASSERT);   // assert reset
+    SPI1->GPRCM.PWREN = (SPI_PWREN_KEY_UNLOCK_W |            // power enable key unlock
                           SPI_PWREN_ENABLE_ENABLE);          // power enable
 
     delay_cycles(POWER_STARTUP_DELAY);
@@ -64,9 +64,9 @@ void InitSPIModule(void) {
 
     SPI1->CTL1 |= SPI_CTL1_ENABLE_ENABLE; // enable SPI
 
-    // SPI pin muxing
+        // SPI pin muxing
     IOMUX->SECCFG.PINCM[IOMUX_PINCM26] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM26_PF_SPI1_SCLK; // SPI clock
-    IOMUX->SECCFG.PINCM[IOMUX_PINCM24] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM24_PF_SPI1_POCI; // SPI MISO
+    IOMUX->SECCFG.PINCM[IOMUX_PINCM24]  = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM24_PF_SPI1_POCI; // SPI MISO
     IOMUX->SECCFG.PINCM[IOMUX_PINCM25] = IOMUX_PINCM_PC_CONNECTED | IOMUX_PINCM25_PF_SPI1_PICO; // SPI MOSI
 }
 

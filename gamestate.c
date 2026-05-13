@@ -11,6 +11,7 @@
 #include "shapes.h"
 #include "random.h"
 #include "gamestate.h"
+#include "joystick.h"
 #include <stdint.h>
 
 // ============================================================================
@@ -20,9 +21,12 @@
 // Read joystick input. STUB: always returns JOY_NONE. Replace with the real
 // driver once you have one. The Game loop doesn't depend on the timing of
 // this -- you can call it every frame and it'll just no-op.
+
+/**
 static JoystickInput Joystick_GetInput(void) {
     return JOY_NONE;
 }
+ */
 
 // ============================================================================
 // Orientation comparison
@@ -130,6 +134,9 @@ float compare_cube_orientations(const Object3D *player,
 // ============================================================================
 
 int TitleScreen(void) {
+
+    int counter = 0;
+
     static Object3D title_cube;
     cube_init(&title_cube);
     obj3d_translate(&title_cube, 0.0f, 0.0f, 6.0f);
@@ -143,8 +150,12 @@ int TitleScreen(void) {
         obj3d_rotate_about_origin(&title_cube, 0.1f, 0.1f, 0.1f);
         obj3d_render_wireframe(&title_cube);
         Screen_Display();
+        counter++;
 
-        if (Joystick_GetInput() == JOY_PRESS) {
+        if (joystick_buttonPressed()) {
+            return GAME;
+        }
+        else if (counter == 100) {
             return GAME;
         }
     }
@@ -213,16 +224,24 @@ int VideoGame(void) {
 
     // ---- Main game loop ---------------------------------------------------
     while (1) {
-        // Read input and rotate the player cube. Each direction maps to a
-        // small rotation around one axis. JOY_PRESS does nothing yet (could
-        // be "give up" / return to title).
-        JoystickInput input = Joystick_GetInput();
-        switch (input) {
-            case JOY_UP:    obj3d_rotate_about_origin(&player_cube, 0, +PLAYER_TURN_AMOUNT, 0); break;
-            case JOY_DOWN:  obj3d_rotate_about_origin(&player_cube, 0, -PLAYER_TURN_AMOUNT, 0); break;
-            case JOY_LEFT:  obj3d_rotate_about_origin(&player_cube, 0, 0, +PLAYER_TURN_AMOUNT); break;
-            case JOY_RIGHT: obj3d_rotate_about_origin(&player_cube, 0, 0, -PLAYER_TURN_AMOUNT); break;
-            default: break;
+        // Update joystick readings
+        joystick_update();
+
+        // Map joystick deflection to rotation angles
+        // jx (left/right) -> phi (Y axis rotation)
+        // jy (up/down) -> theta (X axis rotation, negated so up tilts toward you)
+        float scale = PLAYER_TURN_AMOUNT / 127.0f;
+        float rot_phi = joystick_x() * scale;
+        float rot_theta = -joystick_y() * scale;
+
+        // Apply rotation only if outside deadzone
+        if (!joystick_isCentered()) {
+            obj3d_rotate_about_origin(&player_cube, rot_theta, rot_phi, 0.0f);
+        }
+
+        // Return to title if button pressed
+        if (joystick_buttonPressed()) {
+            return TITLE;
         }
 
         // Render everything
@@ -235,7 +254,7 @@ int VideoGame(void) {
         // Check for orientation match
         float mse = compare_cube_orientations(&player_cube, &reference_cube);
         if (mse < MATCH_TOLERANCE) {
-            return WIN;
+            return ENDSCREEN;
         }
     }
 }
@@ -252,7 +271,7 @@ int FinalScreen() {
         glyph_render_word("PLAY AGAIN", 0, -2.0f, 3, 0.04f);
         Screen_Display();
 
-        if (Joystick_GetInput() == JOY_PRESS) {
+        if (joystick_buttonPressed()) {
             return GAME;
         }
 

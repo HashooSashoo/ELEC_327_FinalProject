@@ -1,7 +1,6 @@
 // commands.h
 #ifndef commands_include
 #define commands_include
-
 #include <stdint.h>
 
 #define NOP            (0x00) // no operation, do nothing
@@ -67,13 +66,13 @@
 #define LCD_RST_PORT    GPIOA
 
 // pin indices within that port
-#define LCD_CS_PIN      (1 << 27)   // example: PA27
+#define LCD_CS_PIN      (1 << 15)   // example: PA15
 #define LCD_DC_PIN      (1 << 12)   // example: PA12
 #define LCD_RST_PIN     (1 << 13)   // example: PA13
 
 // IOMUX PINCM indices for those pins (for configuring as GPIO output)
-#define LCD_CS_PINCM    IOMUX_PINCM60   // example: matches PA27
-#define LCD_DC_PINCM    IOMUX_PINCM34   // example: matches PA13
+#define LCD_CS_PINCM    IOMUX_PINCM37   // example: matches PA15
+#define LCD_DC_PINCM    IOMUX_PINCM34   // example: matches PA12
 #define LCD_RST_PINCM   IOMUX_PINCM35   // example: matches PA14
 
 // IOMUX GPIO constant (always 0x01)
