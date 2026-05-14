@@ -11,19 +11,18 @@
 #include "graphics3d.h"
 #include "gamestate.h"
 #include "joystick.h"
+#include "timer.h"
 
 static Object3D cube;
 static Object3D arrow;
 
 int main(void) {
+    Timer0Initialization();
     joystick_init();
     LCD_InitSPI();
     InitScreen();
 
-    int counter = 0;
-
     int state = TITLE;
-    int score = 0;
 
     while (1) {
         if (state == TITLE) {
@@ -38,36 +37,20 @@ int main(void) {
             state = FinalScreen();
         }
     }
-    /*
-    // Build the cube from the factory. cube_init() leaves the cube
-    // centered at the origin (0, 0, 0); we translate it to z=4 so it
-    // sits comfortably in front of the camera.
-    cube_init(&cube);
-    obj3d_translate(&cube, 0.0f, 0.0f, 4.0f);
-    arrow_init(&arrow);
-    obj3d_translate(&arrow, 0.0f, 2.0f, 4.0f);
+}
 
-    // Example: a second cube placed to the right of the first.
-    // cube_init(&cube2);
-    // obj3d_translate(&cube2, 1.5f, 0.0f, 4.0f);
-
-    // Example: an arrow above the cube.
-    // arrow_init(&arrow);
-    // obj3d_translate(&arrow, 0.0f, 1.5f, 4.0f);
-
-    while (1) {
-        // Each instance can rotate independently.
-        obj3d_rotate_about_origin(&cube, 0.03f, 0.04f, 0.02f);
-        // obj3d_rotate_about_origin(&cube2, -0.02f, 0.03f, 0.0f);
-        obj3d_rotate_about_origin(&arrow,  0.0f,  0.0f,  0.05f);  // spin in plane
-
-        Screen_Clear();
-        obj3d_render_wireframe(&cube);
-        // obj3d_render_wireframe(&cube2);
-        obj3d_render_wireframe(&arrow);
-        Screen_Display();
+// The function needs to be put into the interrupt table!!!!
+void TIMG0_IRQHandler(void)
+{
+    // This wakes up the processor!
+    switch (TIMG0->CPU_INT.IIDX) {
+        case GPTIMER_CPU_INT_IIDX_STAT_Z: // Counted down to zero event.
+            // If we wanted to execute code in the ISR, it would go here.
+            secondPassed = true;
+            break;
+        default:
+            break;
     }
-    */
 }
 
 /*

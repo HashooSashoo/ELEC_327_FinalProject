@@ -924,7 +924,7 @@ static Object3D _glyph_workspace;
 
 // Letter advance in glyph_render_word (local-space units, before scale):
 // glyph width plus a 1-unit gap. Scaled by `scale` at use time.
-#define GLYPH_ADVANCE   (GLYPH_W + 1.0f)   // = 4.0f
+#define GLYPH_ADVANCE   (GLYPH_W + 1.5f)   // = 4.0f
 
 void glyph_render(const GlyphData *glyph, float x, float y, float z, float scale) {
     if (glyph == 0) return;
