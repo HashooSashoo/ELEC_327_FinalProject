@@ -119,19 +119,19 @@ void DrawBitmap(const uint8_t *bitmap) {
     uint8_t row_colors[BITMAP_COLS][2]; // stores a rows worth of colors
  
     for (uint16_t logical_row = 0; logical_row < BITMAP_ROWS; logical_row++) {
-        // ---- Decode this logical row's 120 bits into row_colors ----
-        uint16_t base_idx  = (uint16_t)(logical_row * BITMAP_COLS);
-        uint16_t byte_idx  = base_idx >> 3;
-        uint8_t  bit_pos   = (uint8_t)(7 - (base_idx & 7));
-        uint8_t  cur_byte  = bitmap[byte_idx];
+        // decoding this logical row's 120 bits into row_colors
+        uint16_t base_idx  = (uint16_t)(logical_row * BITMAP_COLS); // start index of row (multiple of 120)
+        uint16_t byte_idx  = base_idx >> 3; // get byte by dividing by 8 (ngl I just bitshifted cus it does the same thing in C)
+        uint8_t  bit_pos   = (uint8_t)(7 - (base_idx & 7)); // gets the actual bit position in the bitmap I store for the pixel
+        uint8_t  cur_byte  = bitmap[byte_idx]; // basically the byte in question for the pixels I want (a bunch of 1s and 0s)
  
         for (uint16_t logical_col = 0; logical_col < BITMAP_COLS; logical_col++) {
-            bool pixel_on = ((cur_byte >> bit_pos) & 1U) != 0U;
-            row_colors[logical_col][0] = pixel_on ? 0xFFU : 0x00U;
-            row_colors[logical_col][1] = pixel_on ? 0xFFU : 0x00U;
+            bool pixel_on = ((cur_byte >> bit_pos) & 1U) != 0U; // checks if the 
+            row_colors[logical_col][0] = pixel_on ? 0xFFU : 0x00U; // basically puts 0xFF if the bit is 1, and 0x00 if the bit is 0
+            row_colors[logical_col][1] = pixel_on ? 0xFFU : 0x00U; // do this for two pixels in the row (thought this ternary operator was cool, only used this in verilog before)
  
-            // Advance bit cursor; load next byte when we wrap past bit 0
-            if (bit_pos == 0U) {
+            // advance bit cursor, load next byte when we wrap past bit 0
+            if (bit_pos == 0U) { 
                 bit_pos = 7U;
                 byte_idx++;
                 cur_byte = bitmap[byte_idx];
@@ -140,65 +140,62 @@ void DrawBitmap(const uint8_t *bitmap) {
             }
         }
  
-        // ---- Send this scanline 2 times (one logical row -> 2 physical rows) ----
+        // send this scanline 2 times (one logical row -> 2 physical rows)
         for (uint8_t row_repeat = 0U; row_repeat < LCD_BLOCK_SIZE; row_repeat++) {
             for (uint16_t logical_col = 0; logical_col < BITMAP_COLS; logical_col++) {
-                uint8_t hi = row_colors[logical_col][0];
-                uint8_t lo = row_colors[logical_col][1];
+                uint8_t hi = row_colors[logical_col][0]; // first 8 bits of the color
+                uint8_t lo = row_colors[logical_col][1]; // last 8 bits of the color
                 // 2 physical columns per logical column, unrolled
-                SPI_SendByte(hi); SPI_SendByte(lo);
-                SPI_SendByte(hi); SPI_SendByte(lo);
+                SPI_SendByte(hi);
+                SPI_SendByte(lo);
+                // send twice because we want to color 2 pixels at a time
+                SPI_SendByte(hi);
+                SPI_SendByte(lo);
             }
         }
     }
  
-    SetCS_High();
+    SetCS_High(); // no more communucation for now, rest little baby :)
 }
  
-// ----- DrawBitmapRegion -----------------------------------------------------
-// Renders the inclusive logical rectangle [x0,x1] x [y0,y1] of the bitmap.
-// The address window on the LCD is set to the corresponding 2x physical
-// rectangle (since each logical pixel = 2x2 physical pixels), then the same
-// streaming approach as DrawBitmap is used: pre-decode each logical row's
-// span of bits into a small hi/lo buffer, send 2x per row.
-//
-// Notes:
-//   - Coordinates are inclusive (matches CASET/PASET semantics).
-//   - We don't bounds-check the caller; if x1 >= BITMAP_COLS we'd read past
-//     the row buffer. Callers (Screen_Display) clip to bitmap bounds before
-//     calling this.
- 
+// THE STORY!
+// so it turns out rendering the entire screen every frame is EXTREMELY slow
+// what's the solution? just render SOME of the screen!, basically in the screen.c file I make it so that
+// only a part of the screen is redrawn based on the region of bits that change (apparently this is called dirty bit rendering)
+// this basically does that, it is the method to draw a region of the screen based on predetermined coordinates,
+// and those predetermined coordinates are determined in screen.c for proper rendering. It makes things much much faster!
 void DrawBitmapRegion(const uint8_t *bitmap,
-                      uint16_t x0, uint16_t y0,
+                      uint16_t x0, uint16_t y0, // coordinates from bitmap (so NOT PIXELS, BITMAP COORDS, (ex. x0 -> [0, 120]))
                       uint16_t x1, uint16_t y1) {
-    // Convert logical rectangle to physical pixel rectangle (2x scale).
+    // this gets the actual pixel numbers on the screen based on bitmap coordinates that we put in
     uint16_t phys_x0 = (uint16_t)(x0 * LCD_BLOCK_SIZE);
     uint16_t phys_x1 = (uint16_t)((x1 + 1) * LCD_BLOCK_SIZE - 1);
     uint16_t phys_y0 = (uint16_t)(y0 * LCD_BLOCK_SIZE);
     uint16_t phys_y1 = (uint16_t)((y1 + 1) * LCD_BLOCK_SIZE - 1);
  
     uint8_t caset_args[4] = {
-        (uint8_t)(phys_x0 >> 8), (uint8_t)(phys_x0 & 0xFF),
-        (uint8_t)(phys_x1 >> 8), (uint8_t)(phys_x1 & 0xFF)
+        (uint8_t)(phys_x0 >> 8), (uint8_t)(phys_x0 & 0xFF), // first 8 bits, last 8 bits of physical left X pixels
+        (uint8_t)(phys_x1 >> 8), (uint8_t)(phys_x1 & 0xFF)  // first 8 bits, last 8 bits of physical right X pixels
     };
     uint8_t paset_args[4] = {
-        (uint8_t)(phys_y0 >> 8), (uint8_t)(phys_y0 & 0xFF),
-        (uint8_t)(phys_y1 >> 8), (uint8_t)(phys_y1 & 0xFF)
+        (uint8_t)(phys_y0 >> 8), (uint8_t)(phys_y0 & 0xFF), // first 8 bits, last 8 bits of physical left Y pixels
+        (uint8_t)(phys_y1 >> 8), (uint8_t)(phys_y1 & 0xFF)  // first 8 bits, last 8 bits of physical right Y pixels
     };
-    LCD_SendCommand(CASET, caset_args, 4);
-    LCD_SendCommand(PASET, paset_args, 4);
+    LCD_SendCommand(CASET, caset_args, 4); // uses X coords to define region of drawing on screen with commands
+    LCD_SendCommand(PASET, paset_args, 4); // same with Y coords
  
-    // Start memory write
+    // start memory write by sending command
     SetCS_Low();
     SetDC_Command();
     SPI_SendByte(RAMWR);
     SetDC_Data();
  
+    
     uint16_t region_width = (uint16_t)(x1 - x0 + 1);
     uint8_t row_colors[BITMAP_COLS][2];   // upper bound; we use [0..region_width)
- 
+    
+    // for here, the code is basically the same as DrawBitmap(), BUT the bounds are limited by x0, x1, y0, and y1 now
     for (uint16_t logical_row = y0; logical_row <= y1; logical_row++) {
-        // Decode columns x0..x1 of this row into row_colors[0..region_width-1]
         uint16_t base_idx = (uint16_t)(logical_row * BITMAP_COLS + x0);
         uint16_t byte_idx = base_idx >> 3;
         uint8_t  bit_pos  = (uint8_t)(7 - (base_idx & 7));
@@ -218,17 +215,15 @@ void DrawBitmapRegion(const uint8_t *bitmap,
             }
         }
  
-        // Send the row twice (one logical row -> 2 physical rows)
         for (uint8_t row_repeat = 0U; row_repeat < LCD_BLOCK_SIZE; row_repeat++) {
             for (uint16_t i = 0; i < region_width; i++) {
                 uint8_t hi = row_colors[i][0];
                 uint8_t lo = row_colors[i][1];
-                // 2 physical columns per logical column
                 SPI_SendByte(hi); SPI_SendByte(lo);
                 SPI_SendByte(hi); SPI_SendByte(lo);
             }
         }
     }
  
-    SetCS_High();
+    SetCS_High(); // too lazy to just add all the comments I did before, but its the same behavior so it should be fine (right?)
 }

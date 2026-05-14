@@ -59,6 +59,10 @@ void translatePoint3D(Point3D *p, float dx, float dy, float dz) {
     p->z += dz;
 }
 
+// so all the rotate functions are basically different parts of the general 3D rotation
+// matrix. I have it seperated into 3 parts to make coding for them easier, because I DO NOT
+// WANT TO WRITE AN ENTIRE 3D ROTATION MATRIX!!! its for around each axis (z, x, then y)
+
 void rotatePoint3D_XY(Point3D *p, float theta) {
     float c = cosf(theta);
     float s = sinf(theta);
@@ -89,6 +93,7 @@ void rotatePoint3D_XZ(Point3D *p, float rho) {
     // y unchanged
 }
 
+// SUPER IMPORTANT, this rotates a point around the origin in 3D space! will use it to rotate cubes!!!!
 void rotatePoint3D(Point3D *p, float theta, float phi, float rho) {
     rotatePoint3D_XY(p, theta);
     rotatePoint3D_YZ(p, phi);

@@ -1,6 +1,11 @@
 #ifndef gamestate_include
 #define gamestate_include
 
+#include <stdbool.h>
+
+extern bool secondPassed;
+extern uint8_t gameScore; // ASSUMING SOMEONE DOES NOT GET ABOVE 255!!!
+
 // Game state enum returned by each scene function. The main loop dispatches
 // based on the return value to switch between screens.
 typedef enum {
