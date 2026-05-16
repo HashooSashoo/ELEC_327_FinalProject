@@ -1,0 +1,209 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #f8e8ee 0%, #e0f7fa 100%);
+    color: #2d2d2d;
+    margin: 0;
+    padding: 0;
+}
+header {
+    background: #f6c7b6;
+    color: #3a2e2e;
+    padding: 2rem 1rem 1rem 1rem;
+    text-align: center;
+    border-bottom: 4px solid #e0b1cb;
+}
+header h1 {
+    font-size: 2.8rem;
+    margin: 0 0 0.2em 0;
+    letter-spacing: 0.1em;
+    font-family: 'Georgia', serif;
+}
+.subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 1em;
+    color: #7d5a5a;
+}
+nav a {
+    color: #7d5a5a;
+    background: #e0b1cb;
+    padding: 0.5em 1.2em;
+    border-radius: 2em;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+nav a:hover {
+    background: #f8e8ee;
+}
+main {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+.video-section {
+    display: flex;
+    justify-content: center;
+    margin: 2rem 0 1.5rem 0;
+}
+.video-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+}
+.video-thumb {
+    width: 120px;
+    height: 80px;
+    background: #e0b1cb;
+    border-radius: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #fff;
+    margin-bottom: 0.5em;
+    box-shadow: 0 2px 8px #e0b1cb55;
+    transition: background 0.2s;
+}
+.video-link:hover .video-thumb {
+    background: #f6c7b6;
+}
+.video-caption {
+    color: #7d5a5a;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+.description {
+    background: #fff6f0cc;
+    border-radius: 1em;
+    padding: 1.5em 2em;
+    margin-bottom: 2em;
+    box-shadow: 0 2px 8px #e0b1cb33;
+}
+.description h2 {
+    color: #b36a5e;
+    margin-top: 0;
+}
+.reports {
+    margin: 2em 0;
+    background: #e0f7fa99;
+    border-radius: 1em;
+    padding: 1em 2em;
+    box-shadow: 0 2px 8px #b2dfdb33;
+}
+.reports h2 {
+    color: #5e7b7b;
+}
+.reports ul {
+    list-style: none;
+    padding: 0;
+}
+.reports li {
+    margin: 0.5em 0;
+}
+.reports a {
+    color: #3a2e2e;
+    text-decoration: underline;
+}
+.gallery {
+    margin: 2em 0;
+}
+.gallery h2 {
+    color: #b36a5e;
+}
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5em;
+}
+.gallery figure {
+    background: #fff6f0;
+    border-radius: 1em;
+    box-shadow: 0 2px 8px #e0b1cb22;
+    margin: 0;
+    padding: 1em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.gallery img {
+    max-width: 100%;
+    border-radius: 0.7em;
+    margin-bottom: 0.7em;
+    box-shadow: 0 1px 4px #e0b1cb33;
+}
+.gallery figcaption {
+    color: #7d5a5a;
+    font-size: 1rem;
+    text-align: center;
+}
+.team {
+    margin: 3em 0 2em 0;
+}
+.team h2 {
+    color: #5e7b7b;
+}
+.team-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2em;
+    justify-content: center;
+}
+.team-card {
+    background: #e0f7fa;
+    border-radius: 1em;
+    box-shadow: 0 2px 8px #b2dfdb33;
+    padding: 1.5em 1em 1em 1em;
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: box-shadow 0.2s;
+}
+.team-card:hover {
+    box-shadow: 0 4px 16px #b2dfdb66;
+}
+.team-card img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 1em;
+    border: 3px solid #f6c7b6;
+}
+.team-info h3 {
+    margin: 0.2em 0 0.1em 0;
+    color: #b36a5e;
+    font-size: 1.2rem;
+}
+.team-info p {
+    margin: 0 0 0.5em 0;
+    color: #7d5a5a;
+    font-size: 1rem;
+}
+.team-info a {
+    color: #3a2e2e;
+    text-decoration: underline;
+    font-size: 1rem;
+}
+footer {
+    background: #f6c7b6;
+    color: #3a2e2e;
+    text-align: center;
+    padding: 1em 0;
+    margin-top: 3em;
+    border-top: 4px solid #e0b1cb;
+    font-size: 1rem;
+}
+@media (max-width: 700px) {
+    main {
+        padding: 0 0.2rem;
+    }
+    .gallery-grid {
+        grid-template-columns: 1fr;
+    }
+    .team-cards {
+        flex-direction: column;
+        align-items: center;
+    }
+}
