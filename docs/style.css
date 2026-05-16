@@ -1,209 +1,387 @@
+/* ─── Reset & Base ──────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg:        #0d0f14;
+    --surface:   #161922;
+    --surface2:  #1e2230;
+    --border:    #2a2f3e;
+    --accent:    #6c8aff;
+    --accent2:   #a78bfa;
+    --text:      #e2e8f0;
+    --text-muted:#8892a4;
+    --card-glow: 0 0 0 1px var(--border), 0 4px 24px rgba(108,138,255,0.07);
+    --radius:    14px;
+}
+
+html { scroll-behavior: smooth; }
+
 body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(135deg, #f8e8ee 0%, #e0f7fa 100%);
-    color: #2d2d2d;
-    margin: 0;
-    padding: 0;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.65;
+    overflow-x: hidden;
 }
+
+/* ─── Cube canvas — absolute, full page height, behind everything ────────── */
+#cube-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    /* height is set by JS to match document height */
+    pointer-events: none;
+    z-index: 0;
+}
+
+header, main, footer { position: relative; z-index: 1; }
+
+/* ─── Header — not sticky, just sits at top ──────────────────────────────── */
 header {
-    background: #f6c7b6;
-    color: #3a2e2e;
-    padding: 2rem 1rem 1rem 1rem;
-    text-align: center;
-    border-bottom: 4px solid #e0b1cb;
+    background: rgba(13,15,20,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    padding: 2.2rem 2rem 1.8rem;
 }
-header h1 {
-    font-size: 2.8rem;
-    margin: 0 0 0.2em 0;
-    letter-spacing: 0.1em;
-    font-family: 'Georgia', serif;
-}
-.subtitle {
-    font-size: 1.2rem;
-    margin-bottom: 1em;
-    color: #7d5a5a;
-}
-nav a {
-    color: #7d5a5a;
-    background: #e0b1cb;
-    padding: 0.5em 1.2em;
-    border-radius: 2em;
-    text-decoration: none;
-    font-weight: bold;
-    transition: background 0.2s;
-}
-nav a:hover {
-    background: #f8e8ee;
-}
-main {
-    max-width: 900px;
-    margin: 2rem auto;
-    padding: 0 1rem;
-}
-.video-section {
+
+.header-inner {
+    max-width: 1000px;
+    margin: 0 auto;
     display: flex;
-    justify-content: center;
-    margin: 2rem 0 1.5rem 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
 }
-.video-link {
+
+header h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(2.2rem, 5vw, 3.2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+}
+
+.subtitle {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin-top: 0.3em;
+}
+
+/* ─── Repo button (clickable — keeps hover animation) ────────────────────── */
+.repo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    padding: 0.55em 1.2em;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background 0.18s, border-color 0.18s, transform 0.15s;
+    white-space: nowrap;
+}
+.repo-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    transform: translateY(-2px);
+}
+.gh-icon { width: 18px; height: 18px; fill: currentColor; flex-shrink: 0; }
+
+/* ─── Main layout ────────────────────────────────────────────────────────── */
+main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+}
+
+/* ─── Section titles (not clickable — no hover animation) ───────────────── */
+.section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 1.4rem;
+    letter-spacing: -0.01em;
+    color: var(--text);
+}
+.section-title::after {
+    content: '';
+    display: block;
+    margin-top: 0.45rem;
+    width: 40px;
+    height: 3px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+}
+
+/* ─── Generic card (static, no hover lift) ───────────────────────────────── */
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--card-glow);
+}
+
+/* ─── Video ──────────────────────────────────────────────────────────────── */
+.video-container {
+    width: 100%;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--card-glow);
+}
+
+.video-container iframe {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: none;
+}
+
+.video-placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     display: flex;
     flex-direction: column;
     align-items: center;
-    text-decoration: none;
+    justify-content: center;
+    gap: 0.8rem;
+    color: var(--text-muted);
 }
-.video-thumb {
-    width: 120px;
-    height: 80px;
-    background: #e0b1cb;
-    border-radius: 1em;
+
+.play-icon { font-size: 3.5rem; opacity: 0.35; }
+.placeholder-label { font-size: 1rem; font-weight: 500; opacity: 0.6; }
+
+/* ─── Description card (not clickable — no hover) ───────────────────────── */
+.description-card {
+    padding: 1.8rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.description-card p { color: var(--text-muted); font-size: 1.02rem; }
+
+/* ─── Reports (clickable buttons — keep hover animation) ────────────────── */
+.reports-row { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+
+.report-card {
+    flex: 1 1 260px;
     display: flex;
     align-items: center;
+    gap: 1rem;
+    padding: 1.2rem 1.4rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    text-align: left;
+    color: var(--text);
+    font-family: inherit;
+    font-size: inherit;
+    box-shadow: var(--card-glow);
+    transition: border-color 0.18s, background 0.18s, transform 0.15s;
+}
+.report-card:hover {
+    border-color: var(--accent);
+    background: var(--surface2);
+    transform: translateY(-2px);
+}
+
+.report-icon { font-size: 2rem; flex-shrink: 0; }
+.report-text { display: flex; flex-direction: column; gap: 0.15em; }
+.report-name { font-weight: 700; font-size: 1.05rem; }
+.report-sub  { font-size: 0.85rem; color: var(--text-muted); }
+.report-arrow { margin-left: auto; font-size: 1.3rem; color: var(--accent); opacity: 0.7; }
+
+/* ─── PDF modal ──────────────────────────────────────────────────────────── */
+.pdf-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(4px);
+    z-index: 500;
+    align-items: center;
     justify-content: center;
-    font-size: 3rem;
-    color: #fff;
-    margin-bottom: 0.5em;
-    box-shadow: 0 2px 8px #e0b1cb55;
-    transition: background 0.2s;
+    padding: 1.5rem;
 }
-.video-link:hover .video-thumb {
-    background: #f6c7b6;
+.pdf-modal.open { display: flex; }
+
+.pdf-modal-inner {
+    position: relative;
+    width: 100%;
+    max-width: 860px;
+    height: 85vh;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    display: flex;
+    flex-direction: column;
 }
-.video-caption {
-    color: #7d5a5a;
-    font-weight: bold;
-    font-size: 1.1rem;
+
+.pdf-modal-inner iframe {
+    flex: 1;
+    width: 100%;
+    border: none;
+    display: block;
 }
-.description {
-    background: #fff6f0cc;
-    border-radius: 1em;
-    padding: 1.5em 2em;
-    margin-bottom: 2em;
-    box-shadow: 0 2px 8px #e0b1cb33;
+
+.pdf-close {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.8rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 1.3rem;
+    line-height: 1;
+    padding: 0.2em 0.55em;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.15s, color 0.15s;
 }
-.description h2 {
-    color: #b36a5e;
-    margin-top: 0;
-}
-.reports {
-    margin: 2em 0;
-    background: #e0f7fa99;
-    border-radius: 1em;
-    padding: 1em 2em;
-    box-shadow: 0 2px 8px #b2dfdb33;
-}
-.reports h2 {
-    color: #5e7b7b;
-}
-.reports ul {
-    list-style: none;
-    padding: 0;
-}
-.reports li {
-    margin: 0.5em 0;
-}
-.reports a {
-    color: #3a2e2e;
-    text-decoration: underline;
-}
-.gallery {
-    margin: 2em 0;
-}
-.gallery h2 {
-    color: #b36a5e;
-}
+.pdf-close:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ─── Gallery — images show natural proportions, no forced crop ──────────── */
 .gallery-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.5em;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.2rem;
 }
-.gallery figure {
-    background: #fff6f0;
-    border-radius: 1em;
-    box-shadow: 0 2px 8px #e0b1cb22;
-    margin: 0;
-    padding: 1em;
+
+/* Gallery items are not clickable — no hover lift or border animation */
+.gallery-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--card-glow);
     display: flex;
     flex-direction: column;
-    align-items: center;
 }
-.gallery img {
-    max-width: 100%;
-    border-radius: 0.7em;
-    margin-bottom: 0.7em;
-    box-shadow: 0 1px 4px #e0b1cb33;
+
+.gallery-item img {
+    width: 100%;
+    height: auto;        /* natural proportions — no forced crop */
+    display: block;
+    background: var(--surface2);
 }
-.gallery figcaption {
-    color: #7d5a5a;
-    font-size: 1rem;
-    text-align: center;
-}
-.team {
-    margin: 3em 0 2em 0;
-}
-.team h2 {
-    color: #5e7b7b;
-}
-.team-cards {
+
+.gallery-item figcaption {
+    padding: 0.8rem 1rem 1rem;
     display: flex;
-    flex-wrap: wrap;
-    gap: 2em;
-    justify-content: center;
+    flex-direction: column;
+    gap: 0.3em;
 }
+.gallery-item figcaption strong { font-size: 0.95rem; color: var(--text); font-weight: 600; }
+.gallery-item figcaption span   { font-size: 0.83rem; color: var(--text-muted); line-height: 1.4; }
+
+/* ─── Team — cards are not clickable, buttons inside are ────────────────── */
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 1.4rem;
+}
+
 .team-card {
-    background: #e0f7fa;
-    border-radius: 1em;
-    box-shadow: 0 2px 8px #b2dfdb33;
-    padding: 1.5em 1em 1em 1em;
-    width: 220px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.6rem 1.2rem 1.4rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: box-shadow 0.2s;
+    text-align: center;
+    gap: 0.5rem;
+    box-shadow: var(--card-glow);
+    transition: border-color 0.2s, transform 0.2s;
 }
 .team-card:hover {
-    box-shadow: 0 4px 16px #b2dfdb66;
+    border-color: var(--accent);
+    transform: translateY(-4px);
 }
+
 .team-card img {
-    width: 90px;
-    height: 90px;
-    object-fit: cover;
+    width: 96px;
+    height: 96px;
     border-radius: 50%;
-    margin-bottom: 1em;
-    border: 3px solid #f6c7b6;
+    object-fit: cover;
+    border: 3px solid var(--border);
+    margin-bottom: 0.6rem;
+    background: var(--surface2);
 }
-.team-info h3 {
-    margin: 0.2em 0 0.1em 0;
-    color: #b36a5e;
-    font-size: 1.2rem;
+
+.team-card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
 }
-.team-info p {
-    margin: 0 0 0.5em 0;
-    color: #7d5a5a;
-    font-size: 1rem;
+
+.college { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+
+.social-links {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 0.3rem;
 }
-.team-info a {
-    color: #3a2e2e;
-    text-decoration: underline;
-    font-size: 1rem;
+
+/* Social buttons are clickable — keep hover animation */
+.social-btn {
+    display: inline-block;
+    padding: 0.3em 0.9em;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.15s, transform 0.15s;
 }
+.social-btn:hover { opacity: 0.85; transform: translateY(-2px); }
+.social-btn.linkedin { background: #0a66c2; color: #fff; }
+.social-btn.github   { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+
+/* ─── Footer ─────────────────────────────────────────────────────────────── */
 footer {
-    background: #f6c7b6;
-    color: #3a2e2e;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
     text-align: center;
-    padding: 1em 0;
-    margin-top: 3em;
-    border-top: 4px solid #e0b1cb;
-    font-size: 1rem;
+    padding: 1.4rem 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    position: relative;
+    z-index: 1;
 }
-@media (max-width: 700px) {
-    main {
-        padding: 0 0.2rem;
-    }
-    .gallery-grid {
-        grid-template-columns: 1fr;
-    }
-    .team-cards {
-        flex-direction: column;
-        align-items: center;
-    }
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+    main { padding: 2rem 1rem 3rem; gap: 2.5rem; }
+    .gallery-grid { grid-template-columns: 1fr; }
+    .team-grid { grid-template-columns: repeat(2, 1fr); }
+    .reports-row { flex-direction: column; }
+    .description-card { padding: 1.2rem; }
+    .pdf-modal { padding: 0.5rem; }
+    .pdf-modal-inner { height: 92vh; }
+}
+
+@media (max-width: 400px) {
+    .team-grid { grid-template-columns: 1fr; }
 }

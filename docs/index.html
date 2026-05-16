@@ -3,126 +3,284 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cubington: ELEC 327 Final Project</title>
+    <title>Cubington — ELEC 327 Final Project</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <!-- Fixed 3D cube canvas — stays behind everything, never scrolls -->
+    <canvas id="cube-canvas"></canvas>
+
     <header>
-        <h1>Cubington</h1>
-        <p class="subtitle">ELEC 327 Final Project &mdash; Rice University</p>
-        <nav>
-            <a href="https://github.com/HashooSashoo/ELEC_327_FinalProject" target="_blank">View Repository</a>
-        </nav>
+        <div class="header-inner">
+            <div class="header-title">
+                <h1>Cubington</h1>
+                <p class="subtitle">ELEC 327 Final Project &mdash; Rice University, Spring 2026</p>
+            </div>
+            <a class="repo-btn" href="https://github.com/HashooSashoo/ELEC_327_FinalProject-1" target="_blank" rel="noopener">
+                <svg class="gh-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.341-3.369-1.341-.454-1.154-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844a9.59 9.59 0 012.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+                View Repository
+            </a>
+        </div>
     </header>
+
+    <!-- PDF viewer modals -->
+    <div class="pdf-modal" id="modal-long" role="dialog" aria-modal="true" aria-label="Long Report">
+        <div class="pdf-modal-inner">
+            <button class="pdf-close" onclick="closeModal('modal-long')" aria-label="Close">&times;</button>
+            <iframe src="ELEC327_LONG_report.pdf" title="Long Report"></iframe>
+        </div>
+    </div>
+    <div class="pdf-modal" id="modal-short" role="dialog" aria-modal="true" aria-label="Short Report">
+        <div class="pdf-modal-inner">
+            <button class="pdf-close" onclick="closeModal('modal-short')" aria-label="Close">&times;</button>
+            <iframe src="ELEC327_SHORT_report.pdf" title="Short Report"></iframe>
+        </div>
+    </div>
+
     <main>
-        <section class="video-section">
-            <a href="https://www.youtube.com/watch?v=kClwJxgmrgk&list=RDkClwJxgmrgk&start_radio=1" target="_blank" class="video-link">
-                <div class="video-thumb">
-                    <span>▶</span>
+
+        <!-- ── Demo Video ─────────────────────────────────────────── -->
+        <section class="section" id="demo">
+            <h2 class="section-title">Demo Video</h2>
+            <div class="video-container">
+                <div class="video-placeholder">
+                    <div class="play-icon">▶</div>
+                    <p class="placeholder-label">Demo video coming soon</p>
+                    <!-- Replace the two lines above with this once you have the link:
+                    <iframe
+                        src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
+                        title="Cubington Demo Video"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>
+                    -->
                 </div>
-                <div class="video-caption">Watch Demo Video</div>
-            </a>
+            </div>
         </section>
-        <section class="description">
-            <h2>Project Overview</h2>
-            <p>
-                Cubington is an interactive, standalone embedded gaming system developed on a custom-designed PCB utilizing the Texas Instruments MSPM0 microcontroller. The core game loop challenges the user’s spatial coordination within a strict time constraint. The game presents a 3D cube rendered on a display in a randomly generated target geometric orientation. The player controls a secondary cube on the screen simultaneously. The goal is to manipulate the second cube's horizontal and vertical axes to exactly mirror the geometry of the target cube. Players attempt to match as many distinct orientations as possible within a 60-second countdown window.
-            </p>
-            <p>
-                The hardware consists of a custom PCB, a Sparkfun analog switch joystick, and an Adafruit TFT LCD Screen. The joystick is the exclusive input, and the system uses advanced firmware and graphics optimizations to deliver a smooth, responsive experience on resource-constrained hardware. The project demonstrates efficient bit-packed memory management, smart partial screen updates, and clean analog filtering on a custom PCB to implement a responsive 3D puzzle game.
-            </p>
+
+        <!-- ── Project Overview ───────────────────────────────────── -->
+        <section class="section" id="overview">
+            <h2 class="section-title">Project Overview</h2>
+            <div class="card description-card">
+                <p>
+                    Cubington is an interactive, standalone embedded gaming system developed on a custom-designed PCB
+                    utilizing the Texas Instruments MSPM0G3507 microcontroller. The core game loop challenges the
+                    player's spatial coordination within a strict time constraint: the game presents a 3D cube rendered
+                    on a TFT LCD display in a randomly generated target orientation. The player simultaneously controls
+                    a second cube, manipulating its horizontal and vertical axes via a Sparkfun analog joystick to
+                    exactly mirror the target. Players attempt to match as many distinct orientations as possible
+                    within a 60-second countdown window.
+                </p>
+                <p>
+                    The hardware consists entirely of a custom PCB designed in KiCad, a Sparkfun analog switch joystick,
+                    and an Adafruit 1.8&quot; TFT LCD screen. The project demonstrates efficient bit-packed memory
+                    management, smart partial screen updates, and clean analog signal conditioning on custom hardware
+                    to deliver a smooth, responsive 3D puzzle experience on severely resource-constrained hardware.
+                </p>
+            </div>
         </section>
-        <section class="video-section">
-            <a href="https://www.youtube.com/watch?v=kClwJxgmrgk&list=RDkClwJxgmrgk&start_radio=1" target="_blank" class="video-link">
-                <div class="video-thumb">
-                    <span>▶</span>
+
+        <!-- ── Presentation Video ─────────────────────────────────── -->
+        <section class="section" id="presentation">
+            <h2 class="section-title">Presentation Video</h2>
+            <div class="video-container">
+                <div class="video-placeholder">
+                    <div class="play-icon">▶</div>
+                    <p class="placeholder-label">Presentation video coming soon</p>
+                    <!-- Replace the two lines above with this once you have the link:
+                    <iframe
+                        src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
+                        title="Cubington Presentation Video"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>
+                    -->
                 </div>
-                <div class="video-caption">Watch Presentation Video</div>
-            </a>
+            </div>
         </section>
-        <section class="reports">
-            <h2>Project Reports</h2>
-            <ul>
-                <li><a href="../other_files/ELEC327_LONG_report.pdf" target="_blank">Long Report (PDF)</a></li>
-                <li><a href="../other_files/ELEC327_SHORT_report.pdf" target="_blank">Short Report (PDF)</a></li>
-            </ul>
+
+        <!-- ── Reports ────────────────────────────────────────────── -->
+        <section class="section" id="reports">
+            <h2 class="section-title">Project Reports</h2>
+            <div class="reports-row">
+                <button class="report-card" onclick="openModal('modal-long')">
+                    <div class="report-icon">📄</div>
+                    <div class="report-text">
+                        <span class="report-name">Long Report</span>
+                        <span class="report-sub">Full technical write-up</span>
+                    </div>
+                    <div class="report-arrow">→</div>
+                </button>
+                <button class="report-card" onclick="openModal('modal-short')">
+                    <div class="report-icon">📋</div>
+                    <div class="report-text">
+                        <span class="report-name">Short Report</span>
+                        <span class="report-sub">Submitted summary</span>
+                    </div>
+                    <div class="report-arrow">→</div>
+                </button>
+            </div>
         </section>
-        <section class="gallery">
-            <h2>Development Gallery</h2>
+
+        <!-- ── Development Gallery ────────────────────────────────── -->
+        <section class="section" id="gallery">
+            <h2 class="section-title">Development Gallery</h2>
             <div class="gallery-grid">
-                <figure>
-                    <img src="pictures/a_melted_joystick_from_trying_to_desolder.jpeg" alt="A melted joystick from trying to desolder">
-                    <figcaption>A melted joystick from trying to desolder</figcaption>
+
+                <figure class="gallery-item">
+                    <img src="pictures/our_first_cube_test.jpeg" alt="Our first cube test" loading="lazy">
+                    <figcaption>
+                        <strong>First Cube Test</strong>
+                        <span>Edit this description to elaborate on the milestone.</span>
+                    </figcaption>
                 </figure>
-                <figure>
-                    <img src="pictures/breakout_board_after_first_smoked_and_died.jpeg" alt="Breakout board after first smoked and died">
-                    <figcaption>Breakout board after first smoked and died</figcaption>
+
+                <figure class="gallery-item">
+                    <img src="pictures/first_ever_color_test_on_screen.jpeg" alt="First ever color test on screen" loading="lazy">
+                    <figcaption>
+                        <strong>First Color on Screen</strong>
+                        <span>Edit this description to elaborate on the milestone.</span>
+                    </figcaption>
                 </figure>
-                <figure>
-                    <img src="pictures/checkerboard_test_on_screen.jpeg" alt="Checkerboard test on screen">
-                    <figcaption>Checkerboard test on screen</figcaption>
+
+                <figure class="gallery-item">
+                    <img src="pictures/checkerboard_test_on_screen.jpeg" alt="Checkerboard test on screen" loading="lazy">
+                    <figcaption>
+                        <strong>Checkerboard Test</strong>
+                        <span>Edit this description to elaborate on the milestone.</span>
+                    </figcaption>
                 </figure>
-                <figure>
-                    <img src="pictures/facetime_when_final_product_was_working.png" alt="Facetime when final product was working">
-                    <figcaption>Facetime when final product was working</figcaption>
+
+                <figure class="gallery-item">
+                    <img src="pictures/square_test_on_screen.jpeg" alt="Square test on screen" loading="lazy">
+                    <figcaption>
+                        <strong>Square Test on Screen</strong>
+                        <span>Edit this description to elaborate on the milestone.</span>
+                    </figcaption>
                 </figure>
-                <figure>
-                    <img src="pictures/first_ever_color_test_on_screen.jpeg" alt="First ever color test on screen">
-                    <figcaption>First ever color test on screen</figcaption>
+
+                <figure class="gallery-item">
+                    <img src="pictures/first_iteration_of_final_screen.jpeg" alt="First iteration of final screen" loading="lazy">
+                    <figcaption>
+                        <strong>First Iteration of Final Screen</strong>
+                        <span>Edit this description to elaborate on the milestone.</span>
+                    </figcaption>
                 </figure>
-                <figure>
-                    <img src="pictures/first_iteration_of_final_screen.jpeg" alt="First iteration of final screen">
-                    <figcaption>First iteration of final screen</figcaption>
+
+                <figure class="gallery-item">
+                    <img src="pictures/first_pcb_draft_completely_wrong.jpeg" alt="First PCB draft — completely wrong" loading="lazy">
+                    <figcaption>
+                        <strong>First PCB Draft (Completely Wrong)</strong>
+                        <span>Edit this description to elaborate on the milestone.</span>
+                    </figcaption>
                 </figure>
-                <figure>
-                    <img src="pictures/first_pcb_draft_completely_wrong.jpeg" alt="First PCB draft completely wrong">
-                    <figcaption>First PCB draft completely wrong</figcaption>
+
+                <figure class="gallery-item">
+                    <img src="pictures/breakout_board_after_first_smoked_and_died.jpeg" alt="Breakout board after it smoked and died" loading="lazy">
+                    <figcaption>
+                        <strong>Breakout Board R.I.P.</strong>
+                        <span>Edit this description to elaborate on the milestone.</span>
+                    </figcaption>
                 </figure>
-                <figure>
-                    <img src="pictures/our_first_cube_test.jpeg" alt="Our first cube test">
-                    <figcaption>Our first cube test</figcaption>
+
+                <figure class="gallery-item">
+                    <img src="pictures/a_melted_joystick_from_trying_to_desolder.jpeg" alt="A melted joystick from trying to desolder" loading="lazy">
+                    <figcaption>
+                        <strong>Melted Joystick</strong>
+                        <span>Edit this description to elaborate on the milestone.</span>
+                    </figcaption>
                 </figure>
-                <figure>
-                    <img src="pictures/square_test_on_screen.jpeg" alt="Square test on screen">
-                    <figcaption>Square test on screen</figcaption>
+
+                <figure class="gallery-item">
+                    <img src="pictures/facetime_when_final_product_was_working.png" alt="FaceTime screenshot the moment the final product worked" loading="lazy">
+                    <figcaption>
+                        <strong>It Works! (FaceTime Screenshot)</strong>
+                        <span>Edit this description to elaborate on the milestone.</span>
+                    </figcaption>
                 </figure>
+
             </div>
         </section>
-        <section class="team">
-            <h2>Meet the Team</h2>
-            <div class="team-cards">
+
+        <!-- ── Team ───────────────────────────────────────────────── -->
+        <section class="section" id="team">
+            <h2 class="section-title">Meet the Team</h2>
+            <div class="team-grid">
+
                 <div class="team-card">
-                    <img src="pictures/linkedin_pictures/zaks_linkedin.jpeg" alt="Zakariya Hashmi">
-                    <div class="team-info">
-                        <h3>Zakariya Hashmi</h3>
-                        <p>Junior @ McMurtry College</p>
-                        <a href="https://linkedin.com/zakariya-hashmi" target="_blank">LinkedIn</a> |
-                        <a href="https://github.com/HashooSashoo" target="_blank">GitHub</a>
+                    <img src="pictures/linkedin_pictures/zaks_linkedin.jpeg" alt="Zakariya Hashmi" loading="lazy">
+                    <h3>Zakariya Hashmi</h3>
+                    <p class="college">Junior &bull; McMurtry College</p>
+                    <div class="social-links">
+                        <a href="https://linkedin.com/in/zakariya-hashmi" target="_blank" rel="noopener" class="social-btn linkedin">LinkedIn</a>
+                        <a href="https://github.com/HashooSashoo" target="_blank" rel="noopener" class="social-btn github">GitHub</a>
                     </div>
                 </div>
+
                 <div class="team-card">
-                    <img src="pictures/linkedin_pictures/milans_linkedin.jpeg" alt="Milan Addepalli">
-                    <div class="team-info">
-                        <h3>Milan Addepalli</h3>
-                        <p>Junior @ McMurtry College</p>
-                        <a href="https://www.linkedin.com/in/milan-addepalli-6241bb231" target="_blank">LinkedIn</a> |
-                        <a href="https://github.com/MilanAdd" target="_blank">GitHub</a>
+                    <img src="pictures/linkedin_pictures/milans_linkedin.jpeg" alt="Milan Addepalli" loading="lazy">
+                    <h3>Milan Addepalli</h3>
+                    <p class="college">Junior &bull; McMurtry College</p>
+                    <div class="social-links">
+                        <a href="https://www.linkedin.com/in/milan-addepalli-6241bb231" target="_blank" rel="noopener" class="social-btn linkedin">LinkedIn</a>
+                        <a href="https://github.com/MilanAdd" target="_blank" rel="noopener" class="social-btn github">GitHub</a>
                     </div>
                 </div>
+
                 <div class="team-card">
-                    <img src="pictures/linkedin_pictures/nathans_linkedin.jpeg" alt="Nathan Cao">
-                    <div class="team-info">
-                        <h3>Nathan Cao</h3>
-                        <p>Junior @ Hanszen College</p>
-                        <a href="https://www.linkedin.com/in/nathan-rui-cao-nrc/" target="_blank">LinkedIn</a> |
-                        <a href="https://github.com/ncao27" target="_blank">GitHub</a>
+                    <img src="pictures/linkedin_pictures/nathans_linkedin.jpeg" alt="Nathan Cao" loading="lazy">
+                    <h3>Nathan Cao</h3>
+                    <p class="college">Junior &bull; Hanszen College</p>
+                    <div class="social-links">
+                        <a href="https://www.linkedin.com/in/nathan-rui-cao-nrc/" target="_blank" rel="noopener" class="social-btn linkedin">LinkedIn</a>
+                        <a href="https://github.com/ncao27" target="_blank" rel="noopener" class="social-btn github">GitHub</a>
                     </div>
                 </div>
+
+                <div class="team-card">
+                    <img src="pictures/linkedin_pictures/kasims_linkedin.jpeg" alt="Kasim Dawood" loading="lazy">
+                    <h3>Kasim Dawood</h3>
+                    <p class="college">Junior &bull; Duncan College</p>
+                    <div class="social-links">
+                        <a href="https://www.linkedin.com/in/kasim-dawood/" target="_blank" rel="noopener" class="social-btn linkedin">LinkedIn</a>
+                    </div>
+                </div>
+
             </div>
         </section>
+
     </main>
+
     <footer>
         <p>&copy; 2026 Cubington Team &mdash; Rice University</p>
     </footer>
+
+    <script src="cubes.js"></script>
+    <script>
+        function openModal(id) {
+            document.getElementById(id).classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        // Close on backdrop click
+        document.querySelectorAll('.pdf-modal').forEach(function(m) {
+            m.addEventListener('click', function(e) {
+                if (e.target === m) closeModal(m.id);
+            });
+        });
+        // Close on Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') document.querySelectorAll('.pdf-modal.open').forEach(function(m) { closeModal(m.id); });
+        });
+    </script>
 </body>
 </html>
